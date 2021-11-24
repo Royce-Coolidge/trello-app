@@ -1,37 +1,24 @@
 import { useState } from 'react'
-import logo from './logo.svg'
 import './App.css'
-import BoardList from './components/board/board-list'
-import Board from './components/board/board'
-import CreateBoard from './components/board/create-board'
+import { Column } from './Column'
+import initialData from './initial-data'
+
 
 function App() {
-  const [boards, setBoard] = useState([])
 
-
-  function createBoard(){
-
-      let board = {
-        id: 1,
-        name: "",
-        lists: []
-      }
-      setBoard(boards => [...boards, board])
-    }
-
-console.log(boards)
+  const [state , initialState] = useState(initialData)
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <CreateBoard createBoard={createBoard} />
-        <div className={`fixed top-0 p-4 w-full grid grid-cols-1 gap-4 sm:grid-cols-${boards.length ?? 1}`}>
-        {
-          boards.length > 0 && boards.map((board, i) => {
-            return <Board key={i} name={board.name} />
-          })}
-          </div>
-      </header>
+    <div>
+      { state.columnOrder.map((columnId) => {
+        return (
+          <Column
+            key={state.columns[columnId].id}
+            column={state.columns[columnId]}
+            tasks={state.columns[columnId].taskIds.map(taskId => state.tasks[taskId])}
+          />)
+
+      })}
     </div>
   )
 }
