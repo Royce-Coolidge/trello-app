@@ -3,9 +3,9 @@ import styled from "styled-components"
 
 export function Task({ task, index }){
 
-    const Task = styled.li`
+    const Task = styled.div`
         padding: 3px 2px 3px;
-        width: 15rem;
+
         border: 1px solid lightgrey;
         margin-bottom: 8px;
         border-radius: 2px;
