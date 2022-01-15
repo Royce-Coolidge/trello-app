@@ -2,7 +2,9 @@ import { useState } from "react";
 import "./App.css";
 import { Column } from "./Column";
 import initialData from "./initial-data";
-import { DragDropContext } from "react-beautiful-dnd";
+import {
+  DragDropContext, Droppable
+} from "react-beautiful-dnd";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -14,7 +16,7 @@ function App() {
 
   function onDragEnd(result) {
 
-    const { destination, source, draggableId } = result;
+    const { destination, source, draggableId, type } = result;
     if (!destination) {
       return;
     }
@@ -25,10 +27,32 @@ function App() {
     ) {
       return;
     }
+
+    if (type === "column") {
+      //create new column order array
+      const newColumnOrder = Array.from(state.columnOrder)
+      // remove old column id from origional column order array
+      newColumnOrder.splice(source.index, 1)
+      // and inserting the column id into the new postion
+      newColumnOrder.splice(destination.index, 0, draggableId)
+
+      // create newState object to mutate changes
+      const newState = {
+        ...state,
+        columnOrder: newColumnOrder,
+      }
+
+      setState(newState)
+
+    }
+
+
+
     const start = state.columns[source.droppableId];
     const end = state.columns[destination.droppableId];
 
-    if (start === end) {
+console.log(source)
+    if (start === end && type === "task") {
       const newTaskIds = Array.from(start.taskIds);
       newTaskIds.splice(source.index, 1);
       newTaskIds.splice(destination.index, 0, draggableId);
@@ -47,10 +71,16 @@ function App() {
       };
 
       setState(newState);
-    } else {
+      return;
+
+    }
       // Moving from one list to another
+      // create new task id array to mutate
       const startTaskIds = Array.from(start.taskIds)
+      // remove dragged task id from this array
       startTaskIds.splice(source.index, 1)
+      // create new start column with same properties as old column but with our new start task is array
+
       const newStart =
       {
         ...start,
@@ -58,6 +88,7 @@ function App() {
       }
 
       const endTaskIds = Array.from(end.taskIds)
+      // insert draggable id at destination index
       endTaskIds.splice(destination.index, 0, draggableId)
       const newEnd = {
         ...end,
@@ -74,25 +105,37 @@ function App() {
       }
       setState(newState)
 
-    }
+
 
   }
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <Container>
-        {state.columnOrder.map((columnId) => {
+      <Droppable droppableId="all-columns" direction="horizontal" type="column">
+        {provided => (
+
+          <Container
+          {...provided.droppableProps}
+            ref={provided.innerRef}
+          >
+
+        {state.columnOrder.map((columnId, index) => {
           return (
             <Column
-              key={state.columns[columnId].id}
-              column={state.columns[columnId]}
-              tasks={state.columns[columnId].taskIds.map(
-                (taskId) => state.tasks[taskId]
+              index={index}
+            key={state.columns[columnId].id}
+            column={state.columns[columnId]}
+            tasks={state.columns[columnId].taskIds.map(
+              (taskId) => state.tasks[taskId]
               )}
-            />
-          );
+              />
+              );
         })}
+            { provided.placeholder}
       </Container>
+            )
+        }
+      </Droppable>
     </DragDropContext>
   );
 }
